@@ -15,3 +15,21 @@ def get_select_content_browser():
 
     for asset in selected_assets:
         unreal.log(asset.get_fname())
+
+
+def get_all_actors():
+    EAS = unreal.EditorActorSubsystem()
+    actors = EAS.get_all_level_actors()
+
+    for actor in actors:
+        unreal.log(actor.get_name())
+
+
+def get_selected_actors():
+    EAS = unreal.EditorActorSubsystem()
+    selected_actors = EAS.get_selected_level_actors()
+
+    for actor in selected_actors:
+        unreal.log(actor.get_name())
+
+get_selected_actors()
