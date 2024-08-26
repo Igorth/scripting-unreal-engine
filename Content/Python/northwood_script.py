@@ -74,4 +74,36 @@ def get_textures_twod():
         texture_srgb = texture.get_editor_property('srgb')
         unreal.log(f"Texture sRGB: {texture_srgb}")
 
-get_static_mesh_data()
+
+def get_static_mesh_lod_data():
+    PML = unreal.ProceduralMeshLibrary()
+    static_meshes = get_asset_class('StaticMesh')
+
+    for static_mesh in static_meshes:
+        static_mesh_tri_count = []         
+        num_lods = static_mesh.get_num_lods()
+
+        for i in range(num_lods):
+            num_sections = static_mesh.get_num_sections(i)
+            lod_tri_count = 0
+
+            for j in range(num_sections):
+                section_data = PML.get_section_from_static_mesh(static_mesh, i, j)
+                section_tri_count = (len(section_data[1]) / 3)
+                lod_tri_count += section_tri_count
+
+            static_mesh_tri_count.append(lod_tri_count)
+
+        static_mesh_reductions = [100]
+
+        for i in range(1, len(static_mesh_tri_count)):
+            static_mesh_reductions.append(int((static_mesh_tri_count[i]/static_mesh_tri_count[0]) * 100 ))
+
+
+        unreal.log(f"Name: {static_mesh.get_name()}")
+        unreal.log(f"Static Mesh Triangles: {static_mesh_tri_count}")
+        unreal.log(f"Static Mesh Reductions: {static_mesh_reductions}")
+        unreal.log("----------------------------------------")
+
+
+get_static_mesh_lod_data()
