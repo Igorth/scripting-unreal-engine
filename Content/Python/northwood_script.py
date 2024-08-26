@@ -76,8 +76,13 @@ def get_textures_twod():
 
 
 def get_static_mesh_lod_data():
+    """
+        Returns the triangles of the mesh
+    """
     PML = unreal.ProceduralMeshLibrary()
     static_meshes = get_asset_class('StaticMesh')
+
+    static_mesh_lod_data = []
 
     for static_mesh in static_meshes:
         static_mesh_tri_count = []         
@@ -100,10 +105,61 @@ def get_static_mesh_lod_data():
             static_mesh_reductions.append(int((static_mesh_tri_count[i]/static_mesh_tri_count[0]) * 100 ))
 
 
-        unreal.log(f"Name: {static_mesh.get_name()}")
-        unreal.log(f"Static Mesh Triangles: {static_mesh_tri_count}")
-        unreal.log(f"Static Mesh Reductions: {static_mesh_reductions}")
-        unreal.log("----------------------------------------")
+        # unreal.log(f"Name: {static_mesh.get_name()}")
+        # unreal.log(f"Static Mesh Triangles: {static_mesh_tri_count}")
+        # unreal.log(f"Static Mesh Reductions: {static_mesh_reductions}")
+        # unreal.log("----------------------------------------")
+        try:
+            lod_data = (static_mesh.get_name(), static_mesh_tri_count[1])
+        except:
+            pass
+        static_mesh_lod_data.append(lod_data)
+    
+    return static_mesh_lod_data
 
 
-get_static_mesh_lod_data()
+
+def get_static_mesh_instance_counts():
+    EAS = unreal.EditorActorSubsystem()
+    level_actors = EAS.get_all_level_actors()
+
+    static_mesh_actors = []
+    static_mesh_actor_counts = []
+
+    for level_actor in level_actors:
+        if level_actor.get_class().get_name() == 'StaticMeshActor':
+            static_mesh_component = level_actor.static_mesh_component  # # static_mesh_component is a property
+            static_mesh = static_mesh_component.static_mesh  # static_mesh is a property
+            static_mesh_actors.append(static_mesh.get_name())
+
+    processed_actors = []
+    for static_mesh_actor in static_mesh_actors:
+        if static_mesh_actor not in processed_actors:
+            actor_counts = (static_mesh_actor, static_mesh_actors.count(static_mesh_actor))
+            static_mesh_actor_counts.append(actor_counts)
+            processed_actors.append(static_mesh_actor)
+
+    static_mesh_actor_counts.sort(key= lambda a: a[1], reverse=True)
+
+    # for item in static_mesh_actor_counts:
+    #     unreal.log(item)
+
+    load_data = get_static_mesh_lod_data()
+
+    # for item in load_data:
+    #     unreal.log(item)
+
+    aggregate_tri_counts = []
+    for i in range(len(static_mesh_actor_counts)):
+        for j in range(len(load_data)):
+            if static_mesh_actor_counts[i][0] == load_data[j][0]:
+                aggregate_tri_count = (static_mesh_actor_counts[i][0], static_mesh_actor_counts[i][1] * load_data[j][1])
+                aggregate_tri_counts.append(aggregate_tri_count)
+
+    aggregate_tri_counts.sort(key=lambda a: a[1], reverse=True)
+    for item in aggregate_tri_counts:
+        unreal.log(item)
+
+
+
+get_static_mesh_instance_counts()
