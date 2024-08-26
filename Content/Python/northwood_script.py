@@ -161,5 +161,20 @@ def get_static_mesh_instance_counts():
         unreal.log(item)
 
 
+def return_material_information_smc():
+    """
+        Set material on every single element, static mesh actor in the level
+    """
+    EAS = unreal.EditorActorSubsystem()
+    level_actors = EAS.get_all_level_actors()
 
-get_static_mesh_instance_counts()
+    test_material = unreal.EditorAssetLibrary.find_asset_data('/Game/Python/MI_test').get_asset()
+
+    for level_actor in level_actors:
+        if level_actor.get_class().get_name() == 'StaticMeshActor':
+            static_mesh_component = level_actor.static_mesh_component
+
+            for i in range(static_mesh_component.get_num_materials()):
+                static_mesh_component.set_material(i, test_material)
+
+return_material_information_smc()
